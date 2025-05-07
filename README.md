@@ -1,97 +1,251 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# React Native WebView Library
 
-# Getting Started
+A customizable WebView SDK for React Native applications that provides an enhanced WebView component with additional features and simplified integration.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Features
 
-## Step 1: Start Metro
+- 📱 Fully compatible with iOS and Android
+- 🔄 Forwarded refs for accessing WebView methods
+- 🔍 Optional console logging for debugging
+- 🧩 TypeScript support with comprehensive type definitions
+- 🛠️ Easy to integrate into any React Native project
+- 📦 Install directly from GitHub (no npm registry required)
+- 🔄 Standard WebView functionality enhanced with additional features
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Installation
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+### Installing from GitHub
 
-```sh
+```bash
 # Using npm
-npm start
+npm install github:M-Bekheet/RN-WebView-SDK
 
-# OR using Yarn
-yarn start
+# Using yarn
+yarn add github:M-Bekheet/RN-WebView-SDK
+
+# Using a specific branch or tag
+npm install github:M-Bekheet/RN-WebView-SDK#main
+yarn add github:M-Bekheet/RN-WebView-SDK#v0.1.0
 ```
 
-## Step 2: Build and run your app
+### Peer Dependencies
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+This library requires the following peer dependencies to be installed in your project:
 
-### Android
-
-```sh
+```bash
 # Using npm
-npm run android
+npm install react-native-webview
 
-# OR using Yarn
-yarn android
+# Using yarn
+yarn add react-native-webview
 ```
 
-### iOS
+For iOS, don't forget to install the pods:
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
+```bash
+cd ios && pod install && cd ..
 ```
 
-Then, and every time you update your native dependencies, run:
+## Usage
 
-```sh
-bundle exec pod install
+### Basic Usage
+
+```jsx
+import React from 'react';
+import { View, SafeAreaView } from 'react-native';
+import { RNWebViewLibrary } from 'rn-webview-library';
+
+const MyComponent = () => {
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <RNWebViewLibrary 
+        source={{ uri: 'https://reactnative.dev/' }} 
+        style={{ flex: 1 }}
+      />
+    </SafeAreaView>
+  );
+};
+
+export default MyComponent;
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+### Using WebView Methods with Refs
 
-```sh
-# Using npm
-npm run ios
+```jsx
+import React, { useRef } from 'react';
+import { View, Button, SafeAreaView } from 'react-native';
+import { RNWebViewLibrary, RNWebViewLibraryMethods } from 'rn-webview-library';
 
-# OR using Yarn
-yarn ios
+const WebViewWithControls = () => {
+  // Create a ref to access WebView methods
+  const webViewRef = useRef<RNWebViewLibraryMethods>(null);
+
+  // Navigation functions
+  const goBack = () => webViewRef.current?.goBack();
+  const goForward = () => webViewRef.current?.goForward();
+  const reload = () => webViewRef.current?.reload();
+  
+  // Execute JavaScript in the WebView
+  const injectJS = () => {
+    webViewRef.current?.injectJavaScript(`
+      alert('Hello from injected JavaScript!');
+      true; // Note that injected JS must return true
+    `);
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <RNWebViewLibrary
+        ref={webViewRef}
+        source={{ uri: 'https://reactnative.dev/' }}
+        style={{ flex: 1 }}
+      />
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+        <Button title="Back" onPress={goBack} />
+        <Button title="Forward" onPress={goForward} />
+        <Button title="Reload" onPress={reload} />
+        <Button title="Inject JS" onPress={injectJS} />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+export default WebViewWithControls;
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+### Custom Props and Event Handling
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```jsx
+import React from 'react';
+import { SafeAreaView } from 'react-native';
+import { RNWebViewLibrary } from 'rn-webview-library';
 
-## Step 3: Modify your app
+const WebViewWithEvents = () => {
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <RNWebViewLibrary
+        source={{ uri: 'https://reactnative.dev/' }}
+        style={{ flex: 1 }}
+        enableLogging={true} // Enable console logging (default is true)
+        
+        // Handle WebView events
+        onLoadStart={(e) => console.log('Loading started:', e.nativeEvent.url)}
+        onLoad={(e) => console.log('Page loaded:', e.nativeEvent.url)}
+        onLoadEnd={(e) => console.log('Loading finished:', e.nativeEvent.url)}
+        onError={(e) => console.error('Error:', e.nativeEvent)}
+        onHttpError={(e) => console.warn('HTTP Error:', e.nativeEvent.statusCode)}
+        
+        // Handle communication from WebView to React Native
+        onMessage={(e) => {
+          console.log('Message from WebView:', e.nativeEvent.data);
+          // Process message data here
+        }}
+        
+        // Standard WebView props are also supported
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+        startInLoadingState={true}
+        scalesPageToFit={true}
+      />
+    </SafeAreaView>
+  );
+};
 
-Now that you have successfully run the app, let's make changes!
+export default WebViewWithEvents;
+```
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## API Reference
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+### RNWebViewLibrary Component
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+The main component exported by this library.
 
-## Congratulations! :tada:
+#### Props
 
-You've successfully run and modified your React Native App. :partying_face:
+`RNWebViewLibrary` accepts all standard [react-native-webview props](https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md) plus the following additional props:
 
-### Now what?
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `enableLogging` | boolean | `true` | Enable/disable console logging of WebView events |
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+#### Methods
 
-# Troubleshooting
+All methods from the standard WebView are available via ref:
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+| Method | Description |
+|--------|-------------|
+| `goBack()` | Navigate back in the WebView history |
+| `goForward()` | Navigate forward in the WebView history |
+| `reload()` | Reload the current page |
+| `stopLoading()` | Stop loading the current page |
+| `injectJavaScript(script)` | Execute JavaScript in the WebView |
+| *...and more* | All standard WebView methods are available |
 
-# Learn More
+## Building and Development
 
-To learn more about React Native, take a look at the following resources:
+### Project Structure
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+```
+rn-webview-library/
+├── lib/                   # Compiled output (generated - do not edit)
+├── src/                   # Library source code
+│   ├── components/        # React components
+│   │   └── WebView.tsx    # The main WebView component
+│   └── index.ts           # Entry point
+├── App.tsx                # Example app for testing
+├── package.json           # Project configuration
+└── tsconfig.json          # TypeScript configuration
+```
+
+### Development Workflow
+
+1. Clone the repository
+   ```bash
+   git clone https://github.com/M-Bekheet/RN-WebView-SDK.git
+   cd rn-webview-library
+   ```
+
+2. Install dependencies
+   ```bash
+   npm install
+   # or
+   yarn
+   ```
+
+3. Run the example app
+   ```bash
+   # iOS
+   npm run ios
+   # or
+   yarn ios
+
+   # Android
+   npm run android
+   # or
+   yarn android
+   ```
+
+4. Make changes to the library code in the `src/` directory
+
+5. Build the library
+   ```bash
+   npm run build
+   # or
+   yarn build
+   ```
+
+### Publishing Updates
+
+1. Make your changes to the library code
+2. Build the library with `npm run build`
+3. Update version in `package.json`
+4. Commit and push your changes to GitHub
+5. Create a new release/tag on GitHub (optional)
+
+## License
+
+MIT
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
