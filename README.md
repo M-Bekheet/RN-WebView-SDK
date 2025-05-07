@@ -34,7 +34,7 @@ This library requires the following peer dependencies to be installed in your pr
 
 ```bash
 # Using npm
-npm install react-native-webview
+npm install react-native-webview@11.23.1
 
 # Using yarn
 yarn add react-native-webview
